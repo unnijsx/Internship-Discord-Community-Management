@@ -1,7 +1,7 @@
 
 import React, { useContext, useEffect, useState } from 'react';
 import { AuthContext } from '../context/AuthContext';
-import { Button, Card, Typography, Space, Input, Form, message, Modal } from 'antd';
+import { Button, Card, Typography, Space, Input, Form, App, Modal } from 'antd';
 import { DiscordOutlined, LockOutlined, UserOutlined } from '@ant-design/icons';
 import { motion } from 'framer-motion';
 import axiosInstance from '../api/axiosInstance';
@@ -10,7 +10,7 @@ import { useNavigate } from 'react-router-dom';
 const { Title, Text } = Typography;
 
 const Login = () => {
-
+    const { message } = App.useApp();
     const { login: discordLogin, user, loading } = useContext(AuthContext);
     const [isDevMode, setIsDevMode] = useState(false);
     const [loadingAuth, setLoadingAuth] = useState(false);
