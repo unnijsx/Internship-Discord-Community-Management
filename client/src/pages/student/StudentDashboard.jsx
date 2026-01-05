@@ -3,7 +3,7 @@ import React, { useEffect, useState, useContext } from 'react';
 import { Card, Row, Col, Statistic, List, Avatar, Typography } from 'antd';
 import { UserOutlined, FileTextOutlined, CheckCircleOutlined, ClockCircleOutlined } from '@ant-design/icons';
 import { AuthContext } from '../../context/AuthContext';
-import axios from 'axios';
+import axiosInstance from '../../api/axiosInstance';
 
 const { Title, Text } = Typography;
 
@@ -16,8 +16,8 @@ const StudentDashboard = () => {
         const fetchStats = async () => {
             try {
                 const token = localStorage.getItem('token');
-                const res = await axios.get('http://localhost:5000/api/students/stats', {
-                    headers: { Authorization: `Bearer ${token}` }
+                const res = await axiosInstance.get('/api/students/stats', {
+                    headers: { Authorization: `Bearer ${token} ` }
                 });
                 setStats({
                     attendance: res.data.attendance || 0,
@@ -46,18 +46,18 @@ const StudentDashboard = () => {
 
             <Row gutter={24}>
                 <Col span={8}>
-                    <Card bordered={false} className="shadow-md">
+                    <Card variant="borderless" className="shadow-md">
                         <Statistic
                             title="Attendance"
                             value={stats.attendance}
                             suffix="%"
                             prefix={<ClockCircleOutlined />}
-                            valueStyle={{ color: stats.attendance > 75 ? '#3f8600' : '#cf1322' }}
+                            itemStyle={{ color: stats.attendance > 75 ? '#3f8600' : '#cf1322' }}
                         />
                     </Card>
                 </Col>
                 <Col span={8}>
-                    <Card bordered={false} className="shadow-md">
+                    <Card variant="borderless" className="shadow-md">
                         <Statistic
                             title="Pending Tasks"
                             value={stats.pendingTasks}
@@ -66,7 +66,7 @@ const StudentDashboard = () => {
                     </Card>
                 </Col>
                 <Col span={8}>
-                    <Card bordered={false} className="shadow-md">
+                    <Card variant="borderless" className="shadow-md">
                         <Statistic
                             title="Study Materials"
                             value={stats.materials}
@@ -77,7 +77,7 @@ const StudentDashboard = () => {
             </Row>
 
             <div className="mt-8 grid grid-cols-1 md:grid-cols-2 gap-8">
-                <Card title="Recent Activity" bordered={false} className="shadow-md">
+                <Card title="Recent Activity" variant="borderless" className="shadow-md">
                     <List
                         itemLayout="horizontal"
                         dataSource={recentActivity}
@@ -93,7 +93,7 @@ const StudentDashboard = () => {
                     />
                 </Card>
 
-                <Card title="Announcements" bordered={false} className="shadow-md">
+                <Card title="Announcements" variant="borderless" className="shadow-md">
                     <div className="text-center text-gray-500 py-8">
                         No new announcements.
                     </div>

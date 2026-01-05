@@ -4,6 +4,7 @@ import { Card, Table, Button, Upload, Modal, Form, Input, Select, message, Tag, 
 import { UploadOutlined, FilePdfOutlined, FileOutlined, DeleteOutlined, DownloadOutlined } from '@ant-design/icons';
 import { AuthContext } from '../../context/AuthContext';
 import axios from 'axios';
+import axiosInstance from '../../api/axiosInstance';
 
 const { Title, Text } = Typography;
 const { Option } = Select;
@@ -23,14 +24,14 @@ const MaterialRepository = () => {
         setLoading(true);
         try {
             const token = localStorage.getItem('token');
-            const res = await axios.get('http://localhost:5000/api/materials', {
+            const res = await axiosInstance.get('/api/materials', {
                 headers: { Authorization: `Bearer ${token}` }
             });
             setMaterials(res.data);
 
             // Also fetch roles for the upload dropdown if user can upload
             if (canUpload && roleList.length === 0) {
-                const rolesRes = await axios.get('http://localhost:5000/api/roles', {
+                const rolesRes = await axiosInstance.get('/api/roles', {
                     headers: { Authorization: `Bearer ${token}` }
                 });
                 setRoleList(rolesRes.data);
@@ -57,7 +58,7 @@ const MaterialRepository = () => {
             }
 
             const token = localStorage.getItem('token');
-            await axios.post('http://localhost:5000/api/materials', formData, {
+            await axiosInstance.post('/api/materials', formData, {
                 headers: {
                     Authorization: `Bearer ${token}`,
                     'Content-Type': 'multipart/form-data'

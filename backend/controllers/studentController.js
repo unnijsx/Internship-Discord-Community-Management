@@ -3,8 +3,18 @@ const StudentProfile = require('../models/StudentProfile');
 
 const getProfile = async (req, res) => {
     try {
-        const student = await StudentProfile.findOne({ user: req.params.userId }).populate('user');
-        if (!student) return res.status(404).json({ message: 'Profile not found' });
+        const userId = req.params.userId || req.user._id;
+        let student = await StudentProfile.findOne({ user: userId }).populate('user');
+
+        if (!student) {
+            // If requesting own profile and it doesn't exist, create default
+            if (userId.toString() === req.user._id.toString()) {
+                student = await StudentProfile.create({ user: userId, joinDate: Date.now() });
+                student = await student.populate('user');
+            } else {
+                return res.status(404).json({ message: 'Profile not found' });
+            }
+        }
         res.json(student);
     } catch (err) {
         res.status(500).json({ message: err.message });
@@ -24,8 +34,35 @@ const updateProfile = async (req, res) => {
     }
 };
 
+const User = require('../models/User');
+const Role = require('../models/Role');
+
 const getAllStudents = async (req, res) => {
     try {
+        // Auto-heal: Ensure all users with STUDENT roles have a profile
+        // 1. Find Student-like roles
+        const studentRoles = await Role.find({
+            $or: [{ name: 'STUDENT' }, { name: 'Student' }, { name: { $regex: /INTERN/i } }]
+        });
+        const roleIds = studentRoles.map(r => r._id);
+
+        // 2. Find Users with these roles
+        const studentUsers = await User.find({ roles: { $in: roleIds } });
+
+        // 3. Upsert profiles for them
+        for (const user of studentUsers) {
+            await StudentProfile.findOneAndUpdate(
+                { user: user._id },
+                {
+                    $setOnInsert: {
+                        joinDate: user.createdAt,
+                        course: 'N/A' // Placeholder
+                    }
+                },
+                { upsert: true, new: true }
+            );
+        }
+
         const students = await StudentProfile.find().populate('user');
         res.json(students);
     } catch (err) {
@@ -58,7 +95,7 @@ const getStudentStats = async (req, res) => {
         // Attendance
         // Simple logic: Count days present vs total days (mock total or use system start?)
         // For now: Just count sessions
-        const attendanceCount = await Attendance.countDocuments({ student: userId });
+        const attendanceCount = await Attendance.countDocuments({ user: userId });
 
         // Tasks
         const pendingTasks = await Task.countDocuments({

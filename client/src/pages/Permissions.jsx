@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { Table, Button, Modal, Form, Input, message, Space, Popconfirm } from 'antd';
 import { PlusOutlined, DeleteOutlined } from '@ant-design/icons';
 import axios from 'axios';
+import axiosInstance from '../api/axiosInstance';
 
 const Permissions = () => {
     const [permissions, setPermissions] = useState([]);
@@ -14,7 +15,7 @@ const Permissions = () => {
         setLoading(true);
         try {
             const token = localStorage.getItem('token');
-            const res = await axios.get('http://localhost:5000/api/permissions', {
+            const res = await axiosInstance.get('/api/permissions', {
                 headers: { Authorization: `Bearer ${token}` }
             });
             setPermissions(res.data);
@@ -31,7 +32,7 @@ const Permissions = () => {
     const handleSave = async (values) => {
         try {
             const token = localStorage.getItem('token');
-            await axios.post('http://localhost:5000/api/permissions', values, {
+            await axiosInstance.post('/api/permissions', values, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             message.success('Permission created');

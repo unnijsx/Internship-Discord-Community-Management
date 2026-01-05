@@ -1,6 +1,6 @@
 
 import React, { createContext, useState, useEffect } from 'react';
-import axios from 'axios';
+import axiosInstance from '../api/axiosInstance';
 
 export const AuthContext = createContext();
 
@@ -23,7 +23,7 @@ export const AuthProvider = ({ children }) => {
 
             if (token) {
                 try {
-                    const res = await axios.get('http://localhost:5000/api/auth/me', {
+                    const res = await axiosInstance.get('/api/auth/me', {
                         headers: { Authorization: `Bearer ${token}` }
                     });
                     setUser(res.data);
@@ -39,7 +39,8 @@ export const AuthProvider = ({ children }) => {
     }, []);
 
     const login = () => {
-        window.location.href = 'http://localhost:5000/api/auth/discord';
+        const apiBase = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+        window.location.href = `${apiBase}/api/auth/discord`;
     };
 
     const logout = () => {

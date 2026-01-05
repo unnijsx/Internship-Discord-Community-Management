@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { Table, Button, Modal, Form, Input, Checkbox, Space, Popconfirm, Tag, message, Typography, ColorPicker, Row, Col, Tabs } from 'antd';
 import { PlusOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons';
 import axios from 'axios';
+import axiosInstance from '../api/axiosInstance';
 
 const { Title } = Typography;
 const { TabPane } = Tabs;
@@ -38,8 +39,8 @@ const Roles = () => {
         try {
             const token = localStorage.getItem('token');
             const [rolesRes, permsRes] = await Promise.all([
-                axios.get('http://localhost:5000/api/roles', { headers: { Authorization: `Bearer ${token}` } }),
-                axios.get('http://localhost:5000/api/permissions', { headers: { Authorization: `Bearer ${token}` } })
+                axiosInstance.get('/api/roles', { headers: { Authorization: `Bearer ${token}` } }),
+                axiosInstance.get('/api/permissions', { headers: { Authorization: `Bearer ${token}` } })
             ]);
             setRoles(rolesRes.data);
             setPermissionsList(permsRes.data);
@@ -95,12 +96,12 @@ const Roles = () => {
         try {
             const token = localStorage.getItem('token');
             if (editingRole) {
-                await axios.put(`http://localhost:5000/api/roles/${editingRole._id}`, payload, {
+                await axiosInstance.put(`/api/roles/${editingRole._id}`, payload, {
                     headers: { Authorization: `Bearer ${token}` }
                 });
                 message.success('Role updated');
             } else {
-                await axios.post('http://localhost:5000/api/roles', payload, {
+                await axiosInstance.post('/api/roles', payload, {
                     headers: { Authorization: `Bearer ${token}` }
                 });
                 message.success('Role created');

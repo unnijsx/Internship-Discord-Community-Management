@@ -5,6 +5,7 @@ import { PlusOutlined, DeleteOutlined } from '@ant-design/icons';
 import axios from 'axios';
 import { AuthContext } from '../context/AuthContext';
 import dayjs from 'dayjs';
+import axiosInstance from '../api/axiosInstance';
 
 const { Option } = Select;
 const { TextArea } = Input;
@@ -20,7 +21,7 @@ const Leaves = () => {
         setLoading(true);
         try {
             const token = localStorage.getItem('token');
-            const res = await axios.get('http://localhost:5000/api/leaves', {
+            const res = await axiosInstance.get('/api/leaves', {
                 headers: { Authorization: `Bearer ${token}` }
             });
             setLeaves(res.data);
@@ -37,7 +38,7 @@ const Leaves = () => {
     const handleApply = async (values) => {
         try {
             const token = localStorage.getItem('token');
-            await axios.post('http://localhost:5000/api/leaves', {
+            await axiosInstance.post('/api/leaves', {
                 ...values,
                 startDate: values.dates[0].toDate(),
                 endDate: values.dates[1].toDate()
@@ -56,7 +57,7 @@ const Leaves = () => {
     const handleStatusUpdate = async (id, status) => {
         try {
             const token = localStorage.getItem('token');
-            await axios.put(`http://localhost:5000/api/leaves/${id}`, { status }, {
+            await axiosInstance.put(`/api/leaves/${id}`, { status }, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             message.success(`Leave ${status}`);

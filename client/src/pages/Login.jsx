@@ -4,7 +4,7 @@ import { AuthContext } from '../context/AuthContext';
 import { Button, Card, Typography, Space, Input, Form, message, Modal } from 'antd';
 import { DiscordOutlined, LockOutlined, UserOutlined } from '@ant-design/icons';
 import { motion } from 'framer-motion';
-import axios from 'axios';
+import axiosInstance from '../api/axiosInstance';
 import { useNavigate } from 'react-router-dom';
 
 const { Title, Text } = Typography;
@@ -26,7 +26,7 @@ const Login = () => {
     const handleCredLogin = async (values) => {
         setLoadingAuth(true);
         try {
-            const res = await axios.post('http://localhost:5000/api/auth/login', values);
+            const res = await axiosInstance.post('/api/auth/login', values);
             localStorage.setItem('token', res.data.token);
             window.location.href = '/'; // Refresh to load context
         } catch (err) {

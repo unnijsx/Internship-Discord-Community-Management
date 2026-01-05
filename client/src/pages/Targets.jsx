@@ -2,7 +2,7 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { Card, Table, Button, Tabs, Modal, Form, Input, InputNumber, Select, Tag, message, Progress, Space, Divider } from 'antd';
 import { PlusOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons';
-import axios from 'axios';
+import axiosInstance from '../api/axiosInstance';
 import { AuthContext } from '../context/AuthContext';
 
 const { Option } = Select;
@@ -26,16 +26,17 @@ const Targets = () => {
         try {
             const token = localStorage.getItem('token');
             // 1. My Targets
-            const resMy = await axios.get('http://localhost:5000/api/targets/my', { headers: { Authorization: `Bearer ${token}` } });
+            const resMy = await axiosInstance.get('/api/targets/my', { headers: { Authorization: `Bearer ${token}` } });
             setMyTargets(resMy.data);
 
             // 2. Assigned Targets (if lead)
-            if (isLeadOrAdmin) {
-                const resAssigned = await axios.get('http://localhost:5000/api/targets/assigned', { headers: { Authorization: `Bearer ${token}` } });
+            const isLead = user?.roles?.some(r => r.name === 'SALES_DIVISION_LEAD' || r.name === 'MANAGER' || r.name === 'Admin'); // Simple check
+            if (isLead || user?.isSuperAdmin) {
+                const resAssigned = await axiosInstance.get('/api/targets/assigned', { headers: { Authorization: `Bearer ${token}` } });
                 setAssignedTargets(resAssigned.data);
 
                 // Also fetch potential assignees (e.g. all users for now, or filter by team in real prod)
-                const resUsers = await axios.get('http://localhost:5000/api/users', { headers: { Authorization: `Bearer ${token}` } });
+                const resUsers = await axiosInstance.get('/api/users', { headers: { Authorization: `Bearer ${token}` } });
                 setStudents(resUsers.data);
             }
         } catch (err) {
@@ -52,7 +53,7 @@ const Targets = () => {
     const handleProgressUpdate = async (targetId, metricId, newValue) => {
         try {
             const token = localStorage.getItem('token');
-            await axios.put(`http://localhost:5000/api/targets/${targetId}/progress`,
+            await axiosInstance.put(`/api/targets/${targetId}/progress`,
                 { metrics: [{ _id: metricId, currentValue: newValue }] },
                 { headers: { Authorization: `Bearer ${token}` } }
             );
@@ -73,7 +74,7 @@ const Targets = () => {
                 metrics: metrics.filter(m => m.name && m.targetValue)
             };
 
-            await axios.post('http://localhost:5000/api/targets', payload, {
+            await axiosInstance.post('/api/targets', payload, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             message.success('Target assigned successfully');

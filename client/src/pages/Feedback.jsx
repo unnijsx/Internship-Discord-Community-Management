@@ -4,6 +4,7 @@ import { Card, Table, Rate, Button, Modal, Form, Input, Select, Tag, Tabs, messa
 import { MessageOutlined, PlusOutlined, UserOutlined } from '@ant-design/icons';
 import { AuthContext } from '../context/AuthContext';
 import axios from 'axios';
+import axiosInstance from '../api/axiosInstance';
 
 const { Title, Text, Paragraph } = Typography;
 const { Option } = Select;
@@ -34,7 +35,7 @@ const Feedback = () => {
             // If Student: fetch /api/feedback/my_id
 
             if (isStudent) {
-                const res = await axios.get(`http://localhost:5000/api/feedback/${user._id}`, {
+                const res = await axiosInstance.get(`/api/feedback/${user._id}`, {
                     headers: { Authorization: `Bearer ${token}` }
                 });
                 setFeedbacks(res.data);
@@ -54,7 +55,7 @@ const Feedback = () => {
         if (!canGiveFeedback) return;
         try {
             const token = localStorage.getItem('token');
-            const res = await axios.get('http://localhost:5000/api/users', { // Assuming users endpoint filters or we filter
+            const res = await axiosInstance.get('/api/users', { // Assuming users endpoint filters or we filter
                 headers: { Authorization: `Bearer ${token}` }
             });
             // Filter only students roughly

@@ -4,6 +4,7 @@ import { AuthContext } from '../../context/AuthContext';
 import { Card, Table, Statistic, Row, Col, Button, Modal, Form, Input, Select, DatePicker, message, Tag, Typography } from 'antd';
 import { DollarOutlined, PlusOutlined, FallOutlined, RiseOutlined } from '@ant-design/icons';
 import axios from 'axios';
+import axiosInstance from '../../api/axiosInstance';
 
 const { Title } = Typography;
 const { Option } = Select;
@@ -22,8 +23,8 @@ const SalesDashboard = () => {
         try {
             const token = localStorage.getItem('token');
             const [feesRes, studentsRes] = await Promise.all([
-                axios.get('http://localhost:5000/api/fees', { headers: { Authorization: `Bearer ${token}` } }),
-                axios.get('http://localhost:5000/api/students', { headers: { Authorization: `Bearer ${token}` } })
+                axiosInstance.get('/api/fees', { headers: { Authorization: `Bearer ${token}` } }),
+                axiosInstance.get('/api/students', { headers: { Authorization: `Bearer ${token}` } })
             ]);
 
             setTransactions(feesRes.data);
@@ -38,16 +39,23 @@ const SalesDashboard = () => {
                 // Since the API `/api/students` likely returns Users or Profiles, let's just implement filtering on client for now 
                 // assuming `studentsRes.data` contains necessary profile info or checking `student.profile.assignedSalesPerson`.
                 // Note: This needs backend support to be secure, but for "Views", client filter is okay for MVP.
-                myStudents = studentsRes.data.filter(s => s.profile?.assignedSalesPerson === user._id);
+                myStudents = studentsRes.data.filter(s => s.assignedSalesPerson === user._id);
             }
             setStudents(myStudents);
 
-            // Calculate mock stats from data
-            const total = feesRes.data.reduce((acc, curr) => acc + curr.amount, 0);
+            // Calculate real stats from data
+            const total = feesRes.data.reduce((acc, curr) => curr.status === 'Completed' ? acc + curr.amount : acc, 0);
+            const pending = feesRes.data.reduce((acc, curr) => curr.status === 'Pending' ? acc + curr.amount : acc, 0);
+            const todayStr = new Date().toDateString();
+            const todayVal = feesRes.data.reduce((acc, curr) => {
+                const isToday = new Date(curr.paymentDate).toDateString() === todayStr;
+                return (isToday && curr.status === 'Completed') ? acc + curr.amount : acc;
+            }, 0);
+
             setStats({
                 total,
-                pending: 0, // Need 'Pending' status in backend data to calculate real value
-                today: 0 // Need date filtering for real value
+                pending,
+                today: todayVal
             });
 
         } catch (err) {
@@ -63,7 +71,7 @@ const SalesDashboard = () => {
     const handleAddRecord = async (values) => {
         try {
             const token = localStorage.getItem('token');
-            await axios.post('http://localhost:5000/api/fees', values, {
+            await axiosInstance.post('/api/fees', values, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             message.success('Fee record added');
@@ -188,6 +196,13 @@ const SalesDashboard = () => {
                             <Option value="Installment">Installment</Option>
                             <Option value="Full">Full Payment</Option>
                             <Option value="Fine">Fine/Other</Option>
+                        </Select>
+                    </Form.Item>
+                    <Form.Item name="status" label="Status" initialValue="Completed">
+                        <Select>
+                            <Option value="Completed">Completed (Paid)</Option>
+                            <Option value="Pending">Pending (Invoice)</Option>
+                            <Option value="Failed">Failed</Option>
                         </Select>
                     </Form.Item>
                     <Form.Item name="remarks" label="Remarks">

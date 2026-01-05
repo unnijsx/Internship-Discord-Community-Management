@@ -4,6 +4,7 @@ import { Card, Table, Tag, Button, Modal, Form, Input, Select, Rate, message, Ty
 import { PlusOutlined, UserOutlined, MessageOutlined } from '@ant-design/icons';
 import axios from 'axios';
 import { AuthContext } from '../../context/AuthContext';
+import axiosInstance from '../../api/axiosInstance';
 
 const { Title, Text } = Typography;
 const { Option } = Select;
@@ -35,7 +36,7 @@ const Feedback = () => {
             const token = localStorage.getItem('token');
             // If no targetUserId provided, assume fetching for self (student view)
             const id = targetUserId || user._id;
-            const res = await axios.get(`http://localhost:5000/api/feedback/${id}`, {
+            const res = await axiosInstance.get(`/api/feedback/${id}`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             setFeedbacks(res.data);

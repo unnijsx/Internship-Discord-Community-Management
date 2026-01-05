@@ -3,7 +3,7 @@ import React, { useState, useEffect, useContext } from 'react';
 import { Card, Avatar, Form, Input, Button, Tabs, Descriptions, Tag, message } from 'antd';
 import { UserOutlined, EditOutlined, SaveOutlined } from '@ant-design/icons';
 import { AuthContext } from '../../context/AuthContext';
-import axios from 'axios';
+import axiosInstance from '../../api/axiosInstance';
 
 const Profile = () => {
     const { user } = useContext(AuthContext);
@@ -16,7 +16,7 @@ const Profile = () => {
         setLoading(true);
         try {
             const token = localStorage.getItem('token');
-            const res = await axios.get('http://localhost:5000/api/students/profile', {
+            const res = await axiosInstance.get('/api/students/profile', {
                 headers: { Authorization: `Bearer ${token}` }
             });
             setProfile(res.data);
@@ -35,7 +35,7 @@ const Profile = () => {
     const handleUpdate = async (values) => {
         try {
             const token = localStorage.getItem('token');
-            await axios.put('http://localhost:5000/api/students/profile', values, {
+            await axiosInstance.put('/api/students/profile', values, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             message.success('Profile updated successfully');

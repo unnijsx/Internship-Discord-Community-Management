@@ -32,6 +32,17 @@ const UserSchema = new mongoose.Schema({
     isSuperAdmin: { // Boolean flag for hardcoded admin access
         type: Boolean,
         default: false
+    },
+    team: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Team'
+    },
+    reportsTo: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User'
+    },
+    designation: {
+        type: String // e.g. "Associate", "Intern"
     }
 }, { timestamps: true });
 

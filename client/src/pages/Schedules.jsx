@@ -5,6 +5,7 @@ import { PlusOutlined } from '@ant-design/icons';
 import axios from 'axios';
 import { AuthContext } from '../context/AuthContext';
 import dayjs from 'dayjs';
+import axiosInstance from '../api/axiosInstance';
 
 const { Option } = Select;
 
@@ -22,7 +23,7 @@ const Schedules = () => {
     const fetchEvents = async () => {
         try {
             const token = localStorage.getItem('token');
-            const res = await axios.get('http://localhost:5000/api/events', {
+            const res = await axiosInstance.get('/api/events', {
                 headers: { Authorization: `Bearer ${token}` }
             });
             setEvents(res.data);
@@ -58,7 +59,7 @@ const Schedules = () => {
                 startTime: values.startTime.toISOString(),
                 endTime: values.endTime?.toISOString()
             };
-            await axios.post('http://localhost:5000/api/events', payload, {
+            await axiosInstance.post('/api/events', payload, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             message.success('Event scheduled');

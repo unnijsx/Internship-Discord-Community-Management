@@ -4,6 +4,7 @@ import { Card, Table, Tag, Button, Modal, Form, Input, Select, message, Typograp
 import { PlusOutlined, EditOutlined, MessageOutlined } from '@ant-design/icons';
 import axios from 'axios';
 import { AuthContext } from '../../context/AuthContext';
+import axiosInstance from '../../api/axiosInstance';
 
 const { Title, Text } = Typography;
 const { TextArea } = Input;
@@ -21,7 +22,7 @@ const Tickets = () => {
         setLoading(true);
         try {
             const token = localStorage.getItem('token');
-            const res = await axios.get('http://localhost:5000/api/communication/tickets', {
+            const res = await axiosInstance.get('/api/communication/tickets', {
                 headers: { Authorization: `Bearer ${token}` }
             });
             setTickets(res.data);
@@ -48,7 +49,7 @@ const Tickets = () => {
             const token = localStorage.getItem('token');
             // If user is admin/support, they can update status. If user is creator, maybe just description?
             // For now assume update endpoint handles permissions.
-            await axios.put(`http://localhost:5000/api/communication/tickets/${editingTicket._id}`, values, {
+            await axiosInstance.put(`/api/communication/tickets/${editingTicket._id}`, values, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             message.success('Ticket updated');

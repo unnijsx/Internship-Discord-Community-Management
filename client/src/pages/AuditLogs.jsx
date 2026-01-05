@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Table, Tag, message, Card } from 'antd';
 import axios from 'axios';
+import axiosInstance from '../api/axiosInstance';
 
 const AuditLogs = () => {
     const [logs, setLogs] = useState([]);
@@ -11,7 +12,7 @@ const AuditLogs = () => {
         setLoading(true);
         try {
             const token = localStorage.getItem('token');
-            const res = await axios.get(`http://localhost:5000/api/audit-logs?page=${page}&limit=${pagination.pageSize}`, {
+            const res = await axiosInstance.get(`/api/audit-logs?page=${page}&limit=${pagination.pageSize}`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             setLogs(res.data.logs);

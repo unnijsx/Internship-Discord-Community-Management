@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { Card, Form, Input, Button, List, Typography, Tag, message, Select, Switch } from 'antd';
 import { SoundOutlined, RobotOutlined } from '@ant-design/icons';
 import axios from 'axios';
+import axiosInstance from '../../api/axiosInstance';
 
 const { Title, Text } = Typography;
 const { TextArea } = Input;
@@ -18,7 +19,7 @@ const Broadcasts = () => {
     const fetchBroadcasts = async () => {
         try {
             const token = localStorage.getItem('token');
-            const res = await axios.get('http://localhost:5000/api/communication/broadcasts', {
+            const res = await axiosInstance.get('/api/communication/broadcasts', {
                 headers: { Authorization: `Bearer ${token}` }
             });
             setBroadcasts(res.data);
@@ -40,7 +41,7 @@ const Broadcasts = () => {
     const fetchChannels = async () => {
         try {
             const token = localStorage.getItem('token');
-            const res = await axios.get('http://localhost:5000/api/communication/channels', {
+            const res = await axiosInstance.get('/api/communication/channels', {
                 headers: { Authorization: `Bearer ${token}` }
             });
             setChannels(res.data);

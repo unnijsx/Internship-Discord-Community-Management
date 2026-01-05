@@ -8,7 +8,8 @@ const verifyToken = require('../middleware/authMiddleware');
 
 router.use(verifyToken);
 
-router.get('/stats', getStudentStats); // Order matters! specific before generic
+router.get('/stats', getStudentStats);
+router.get('/profile', getProfile);
 router.get('/', getAllStudents);
 router.get('/:userId', getProfile);
 router.put('/:userId', updateProfile);

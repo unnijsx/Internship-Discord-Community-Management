@@ -61,16 +61,60 @@ const handleDiscordLogout = async (discordId) => {
     return { success: true, message: `Clocked out. Duration: ${attendance.durationMinutes} mins.` };
 };
 
-// API: QR Code Scan (Student scans Admin's QR)
-// Logic: Admin generates a token (session ID) encoded in QR. Student scans it.
-// POST /api/attendance/scan
-const handleQRScan = async (req, res) => {
-    const { userId, qrToken, start_or_end } = req.body; // start_or_end = 'start' or 'end'
+const jwt = require('jsonwebtoken');
 
-    // In a real app, verify qrToken is valid/active for the current session
-    // For now, assuming static QR for "Campus Location"
+// In-memory store for active codes (Production: Use Redis)
+// Map<code (string), timestamp (number)>
+const activeCodes = new Map();
+
+// Cleanup old codes every minute
+setInterval(() => {
+    const now = Date.now();
+    for (const [code, ts] of activeCodes) {
+        if (now - ts > 70000) activeCodes.delete(code);
+    }
+}, 60000);
+
+// Generate a short-lived QR token + Manual Code
+const generateQR = async (req, res) => {
+    try {
+        const token = jwt.sign({ type: 'attendance_qr', created: Date.now() }, process.env.JWT_SECRET, { expiresIn: '60s' });
+
+        // Generate flexible 6-digit code
+        const code = Math.floor(100000 + Math.random() * 900000).toString();
+        activeCodes.set(code, Date.now());
+
+        res.json({ token, code });
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+};
+
+// API: Clock In via QR Scan OR Manual Code
+const handleQRScan = async (req, res) => {
+    const { userId, qrToken, manualCode, start_or_end } = req.body;
 
     try {
+        if (manualCode) {
+            // Verify Manual Code
+            const timestamp = activeCodes.get(manualCode);
+            if (!timestamp) return res.status(400).json({ message: 'Invalid Code' });
+            if (Date.now() - timestamp > 65000) { // 65s grace
+                activeCodes.delete(manualCode);
+                return res.status(400).json({ message: 'Code Expired' });
+            }
+        } else if (qrToken) {
+            // Verify Token
+            try {
+                const decoded = jwt.verify(qrToken, process.env.JWT_SECRET);
+                if (decoded.type !== 'attendance_qr') throw new Error('Invalid QR Type');
+            } catch (err) {
+                return res.status(400).json({ message: 'Invalid or Expired QR Code' });
+            }
+        } else {
+            return res.status(400).json({ message: 'No credential provided' });
+        }
+
         const today = new Date();
         today.setHours(0, 0, 0, 0);
         let attendance = await Attendance.findOne({ user: userId, date: today });
@@ -82,7 +126,7 @@ const handleQRScan = async (req, res) => {
                 user: userId,
                 date: today,
                 clockInTime: new Date(),
-                method: 'QR',
+                method: manualCode ? 'Code' : 'QR',
                 status: 'Present'
             });
             await attendance.save();
@@ -119,6 +163,34 @@ const getAttendanceHistory = async (req, res) => {
     }
 };
 
+const getAllAttendance = async (req, res) => {
+    try {
+        const { date, userId } = req.query;
+        let filter = {};
+
+        if (date) {
+            const queryDate = new Date(date);
+            queryDate.setHours(0, 0, 0, 0);
+            const nextDay = new Date(queryDate);
+            nextDay.setDate(nextDay.getDate() + 1);
+            filter.date = { $gte: queryDate, $lt: nextDay };
+        }
+
+        if (userId) {
+            filter.user = userId;
+        }
+
+        const records = await Attendance.find(filter)
+            .populate('user', 'username email')
+            .sort({ date: -1 })
+            .limit(100); // hard limit for now
+
+        res.json(records);
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+};
+
 // Placeholder for bot markAttendance if needed separately
 const markAttendance = async (req, res) => {
     // Similar logic to handleDiscordLogin but via API
@@ -130,5 +202,7 @@ module.exports = {
     handleDiscordLogout,
     handleQRScan,
     getAttendanceHistory,
-    markAttendance
+    getAllAttendance,
+    markAttendance,
+    generateQR
 };

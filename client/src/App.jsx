@@ -68,7 +68,7 @@ const App = () => {
               <Route path="/permissions" element={<Permissions />} />
 
               {/* Student Routes */}
-              <Route path="/student/dashboard" element={<StudentDashboard />} />
+              <Route path="/student" element={<StudentDashboard />} />
               <Route path="/student/profile" element={<Profile />} />
 
               {/* Feature Routes */}

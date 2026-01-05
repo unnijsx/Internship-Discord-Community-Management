@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect, useContext } from 'react';
 import { Table, Tag, Select, message, Button, Typography, Switch } from 'antd';
-import axios from 'axios';
+import axiosInstance from '../api/axiosInstance';
 import { AuthContext } from '../context/AuthContext';
 
 const { Title } = Typography;
@@ -18,8 +18,8 @@ const UserManagement = () => {
         try {
             const token = localStorage.getItem('token');
             const [usersRes, rolesRes] = await Promise.all([
-                axios.get('http://localhost:5000/api/users', { headers: { Authorization: `Bearer ${token}` } }),
-                axios.get('http://localhost:5000/api/roles', { headers: { Authorization: `Bearer ${token}` } })
+                axiosInstance.get('/api/users', { headers: { Authorization: `Bearer ${token}` } }),
+                axiosInstance.get('/api/roles', { headers: { Authorization: `Bearer ${token}` } })
             ]);
             setUsers(usersRes.data);
             setRoles(rolesRes.data);
@@ -36,7 +36,7 @@ const UserManagement = () => {
     const handleRoleChange = async (userId, newRoles) => {
         try {
             const token = localStorage.getItem('token');
-            await axios.put(`http://localhost:5000/api/users/${userId}/roles`, { roles: newRoles }, {
+            await axiosInstance.put(`/api/users/${userId}/roles`, { roles: newRoles }, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             message.success('Roles updated');
@@ -49,7 +49,7 @@ const UserManagement = () => {
     const handleSuperAdminToggle = async (userId, checked) => {
         try {
             const token = localStorage.getItem('token');
-            await axios.put(`http://localhost:5000/api/users/${userId}/superadmin`, { isSuperAdmin: checked }, {
+            await axiosInstance.put(`/api/users/${userId}/superadmin`, { isSuperAdmin: checked }, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             message.success('User updated');

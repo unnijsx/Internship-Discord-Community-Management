@@ -2,7 +2,7 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { Card, Button, Modal, Form, Input, Select, Tag, message, Avatar, Tooltip, DatePicker } from 'antd';
 import { PlusOutlined, DeleteOutlined, UserOutlined, ArrowRightOutlined, ArrowLeftOutlined } from '@ant-design/icons';
-import axios from 'axios';
+import axiosInstance from '../../api/axiosInstance';
 import { AuthContext } from '../../context/AuthContext'; // Adjusted path if needed
 
 const { Option } = Select;
@@ -23,8 +23,8 @@ const TaskBoard = () => {
         try {
             const token = localStorage.getItem('token');
             const [tasksRes, usersRes] = await Promise.all([
-                axios.get('http://localhost:5000/api/tasks', { headers: { Authorization: `Bearer ${token}` } }),
-                axios.get('http://localhost:5000/api/users', { headers: { Authorization: `Bearer ${token}` } }),
+                axiosInstance.get('/api/tasks', { headers: { Authorization: `Bearer ${token}` } }),
+                axiosInstance.get('/api/users', { headers: { Authorization: `Bearer ${token}` } }),
             ]);
             setTasks(tasksRes.data);
             setUsers(usersRes.data);
@@ -41,7 +41,7 @@ const TaskBoard = () => {
     const handleCreate = async (values) => {
         try {
             const token = localStorage.getItem('token');
-            await axios.post('http://localhost:5000/api/tasks', values, {
+            await axiosInstance.post('/api/tasks', values, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             message.success('Task created');
@@ -62,7 +62,7 @@ const TaskBoard = () => {
         const newStatus = statuses[newIndex];
         try {
             const token = localStorage.getItem('token');
-            await axios.put(`http://localhost:5000/api/tasks/${task._id}`, { status: newStatus }, {
+            await axiosInstance.put(`/api/tasks/${task._id}`, { status: newStatus }, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             setTasks(prev => prev.map(t => t._id === task._id ? { ...t, status: newStatus } : t));
@@ -74,7 +74,7 @@ const TaskBoard = () => {
     const handleDelete = async (id) => {
         try {
             const token = localStorage.getItem('token');
-            await axios.delete(`http://localhost:5000/api/tasks/${id}`, {
+            await axiosInstance.delete(`/api/tasks/${id}`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             fetchData();

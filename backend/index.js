@@ -12,7 +12,12 @@ const setupSwagger = require('./config/swagger');
 const app = express();
 
 // Middleware
-app.use(cors());
+app.use(cors({
+    origin: ['http://localhost:5173', 'https://internship-discord-community-manage.vercel.app', 'https://discord-job-integration-client.vercel.app'], // Add your frontend Vercel URL here
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization']
+}));
 app.use(express.json());
 
 // Setup Swagger
@@ -53,10 +58,6 @@ const roleController = require('./controllers/roleController');
 // Wait for DB before seeding (simple hook)
 mongoose.connection.once('open', async () => {
     await seedDefaultPermissions();
-    // Auto-seed roles if user requested "defaultly load"
-    // Mocking request/response for the controller function or refactoring it to be standalone
-    // Refactoring controller to have a standalone helper is better, but for now calling it with mock objects or extracting logic
-    // Let's call the controller function with a mock req/res to reuse logic quickly without refactor risk
     const mockReq = { body: {}, user: { _id: 'system' } };
     const mockRes = { json: () => { }, status: () => ({ json: () => { } }) };
     await roleController.seedDefaultRoles(mockReq, mockRes);
@@ -72,6 +73,7 @@ app.use('/api/leaves', require('./routes/leaveRoutes'));
 app.use('/api/feedback', require('./routes/feedbackRoutes'));
 app.use('/api/targets', require('./routes/targetRoutes'));
 app.use('/api/events', require('./routes/eventRoutes'));
+app.use('/api/teams', require('./routes/teamRoutes'));
 
 
 
@@ -95,4 +97,6 @@ if (process.env.DISCORD_TOKEN) {
 } else {
     console.warn('DISCORD_TOKEN not found, skipping Bot login.');
 }
+
+module.exports = app;
 
